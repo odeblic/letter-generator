@@ -20,6 +20,8 @@ Few packages are necessary:
 pip install -r requirements.txt
 ```
 
+`pdflatex` is required (and `LateX` packages) to build PDFs.
+
 ## Configuration
 
 Sender:
