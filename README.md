@@ -10,6 +10,16 @@ The identity is provided by the `Sender` and its signature.
 
 Documents are generated as PDF files.
 
+## Setup
+
+You need **Python 3.7** or higher.
+
+Few packages are necessary:
+
+```sh
+pip install -r requirements.txt
+```
+
 ## Configuration
 
 Sender:
@@ -76,7 +86,14 @@ Overall, the configuration layout looks like this:
 
 ## Usage
 
+You just need to run the script with no arguments:
+
 ```sh
 python3 generator.py
+```
+
+All PDF files will be generated in the `output` folder:
+
+```sh
 ls output
 ```
