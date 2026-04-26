@@ -20,11 +20,11 @@ Few packages are necessary:
 pip install -r requirements.txt
 ```
 
-`pdflatex` is required (and `LateX` packages) to build PDFs.
+**pdflatex** is required (and **LateX** packages) to build PDFs.
 
 ## Configuration
 
-Sender:
+### Sender
 
 Contact details of the sender and signature if any.
 
@@ -37,7 +37,7 @@ signature_file: "signature.png"     # optional, replaced by fullname if not prov
 
 Senders are defined as `.yaml` files and located in `./senders/`.
 
-Context:
+### Context
 
 Definition of the context. `variables` are used for **Jinja2** substitutions in text.
 
@@ -54,7 +54,7 @@ date: "1999-12-31"           # optional, defaulted to today's date
 
 Contexts are defined as `.yaml` files and located in `./contexts/`.
 
-Template:
+### Template
 
 Content of the document itself. All fields are required.
 If mentioned, variables `%COMPANY%` and `%TITLE%` are substituted
@@ -73,7 +73,9 @@ closing: "Sincerely,"
 
 Templates are defined as `.yaml` files and located in `./templates/`.
 
-Overall, the configuration layout looks like this:
+### Layout
+
+Overall, the configuration file hierarchy looks like this:
 
 ```
 .
@@ -94,8 +96,4 @@ You just need to run the script with no arguments:
 python3 generator.py
 ```
 
-All PDF files will be generated in the `output` folder:
-
-```sh
-ls output
-```
+All PDF files will be generated in the `output` folder.
