@@ -209,7 +209,7 @@ def make_context() -> None:
                 }
             }
             print(f'Creating context \033[33m{label}\033[0m')
-            filename = folder / f'letter_{index + 1}.yaml'
+            filename = folder / f'letter-{index + 1}.yaml'
             with open(filename, 'w') as f:
                 yaml.dump(context, f, default_flow_style=False)
 
