@@ -1,3 +1,4 @@
+import argparse
 import csv
 import datetime
 import glob
@@ -127,9 +128,10 @@ class Template:
                 f.write('\\hspace{8cm}\n')
                 f.write(f'{full_name}\n')
 
-    def write_latex(self, context: Context, sender: Sender) -> None:
+    # TODO: use a dedicated folder for LateX
+    def write_latex(self, context: Context, sender: Sender, date: datetime.date | None = None) -> None:
         self.__write_contact(sender.full_name, sender.phone_number, sender.email_address)
-        self.__write_date(context.date)
+        self.__write_date(date or context.date)
         self.__write_attention(context.variables)
         self.__write_subject(context.variables)
         self.__write_greeting(context.variables)
@@ -213,26 +215,49 @@ def make_context() -> None:
 
 
 def main() -> None:
-    for context_file in glob.glob('contexts/*.yaml'):
-        print(f'Looking at file \033[34m{context_file}\033[0m')
-        context = Context.read_yaml(context_file)
-        print(f'Processing context \033[35m{context.label}\033[0m')
-        template_file = f'templates/{context.template}.yaml'
-        print(f'Looking at file \033[34m{template_file}\033[0m')
-        template = Template.read_yaml(template_file)
-        sender_file = f'senders/{context.sender}.yaml'
+    if args.generate:
+        make_context()
+    default_sender = None
+    if args.sender is not None:
+        sender_file = f'senders/{args.sender}.yaml'
         print(f'Looking at file \033[34m{sender_file}\033[0m')
-        sender = Sender.read_yaml(sender_file)
-        print(f'Using sender \033[35m{sender.full_name}\033[0m')
+        default_sender = Sender.read_yaml(sender_file)
+        print(f'Defaulting the sender to \033[33m{default_sender.full_name}\033[0m')
+    for context_file in glob.glob('contexts/*.yaml'):
+        print('-' * 60)
         try:
-            template.write_latex(context, sender)
+            print(f'Looking at file \033[34m{context_file}\033[0m')
+            context = Context.read_yaml(context_file)
+            print(f'Processing context \033[35m{context.label}\033[0m')
+            template_file = f'templates/{context.template}.yaml'
+            print(f'Looking at file \033[34m{template_file}\033[0m')
+            template = Template.read_yaml(template_file)
+            if default_sender is None:
+                sender_file = f'senders/{context.sender}.yaml'
+                print(f'Looking at file \033[34m{sender_file}\033[0m')
+                sender = Sender.read_yaml(sender_file)
+                print(f'Using sender \033[35m{sender.full_name}\033[0m')
+            else:
+                sender = default_sender
+        except (ValueError, TypeError) as e:
+            print(f'\033[31mError: {e}\033[0m')
+            continue
+        try:
+            template.write_latex(context, sender, args.date)
         except jinja2.exceptions.UndefinedError as e:
-            print(f'\033[31mError at variable substitution: {e}.\033[0m')
+            print(f'\033[31mError at variable substitution: {e}\033[0m')
             continue
         build_pdf(context.label)
-        cleanup(context.label)
+        if not args.nocleanup:
+            cleanup(context.label)
 
 
 if __name__ == '__main__':
-    make_context()
+    parser = argparse.ArgumentParser(description="A simple string parser")
+    parser.add_argument("--generate", action='store_true', help="Generate context files")
+    parser.add_argument("--context", help="Only process this context")
+    parser.add_argument("--sender", help="Force the sender")
+    parser.add_argument("--date", type=datetime.date.fromisoformat, help="Force the date (YYYY-MM-DD)")
+    parser.add_argument("--nocleanup", action='store_true', help="Do not cleanup")
+    args = parser.parse_args()
     main()
