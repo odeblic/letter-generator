@@ -61,6 +61,9 @@ class Template:
     def read_yaml(cls, file: Path) -> 'Template':
         with open(file, 'r') as f:
             data = yaml.safe_load(f)
+        for line in data['content']:
+            if len(line) == 0:
+                raise ValueError('Empty lines are not allowed')
         return cls(**data)
 
     def __write_contact(self, full_name: str, phone_number: str, email_address: str) -> None:
