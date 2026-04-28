@@ -153,7 +153,7 @@ def build_pdf(label: str) -> None:
         print(f'\033[31mError: {e}.\033[0m')
 
 
-def cleanup(label: str) -> None:
+def cleanup_files(label: str) -> None:
     folder = Path('output')
     os.remove(folder / f'pdflatex-{label}.log')
     os.remove(folder / f'{label}.log')
@@ -169,7 +169,7 @@ def cleanup(label: str) -> None:
     os.remove('signature.tex')
 
 
-# unused
+# NOTE: unused
 def move_documents() -> None:
     folder = Path('documents')
     folder.mkdir(exist_ok=True)
@@ -214,6 +214,33 @@ def make_context() -> None:
                 yaml.dump(context, f, default_flow_style=False)
 
 
+def process_context(context: Context, *,
+                    sender: Sender | None = None,
+                    date: datetime.date | None = None,
+                    cleanup: bool = True) -> None:
+    try:
+        print(f'Processing context \033[35m{context.label}\033[0m')
+        template_file = f'templates/{context.template}.yaml'
+        print(f'Looking at file \033[34m{template_file}\033[0m')
+        template = Template.read_yaml(template_file)
+        if sender is None:
+            sender_file = f'senders/{context.sender}.yaml'
+            print(f'Looking at file \033[34m{sender_file}\033[0m')
+            sender = Sender.read_yaml(sender_file)
+            print(f'Using sender \033[35m{sender.full_name}\033[0m')
+    except (ValueError, TypeError) as e:
+        print(f'\033[31mError: {e}\033[0m')
+        return
+    try:
+        template.write_latex(context, sender, date)
+    except jinja2.exceptions.UndefinedError as e:
+        print(f'\033[31mError at variable substitution: {e}\033[0m')
+        return
+    build_pdf(context.label)
+    if cleanup:
+        cleanup_files(context.label)
+
+
 def main() -> None:
     if args.generate:
         make_context()
@@ -223,33 +250,18 @@ def main() -> None:
         print(f'Looking at file \033[34m{sender_file}\033[0m')
         default_sender = Sender.read_yaml(sender_file)
         print(f'Defaulting the sender to \033[33m{default_sender.full_name}\033[0m')
-    for context_file in glob.glob('contexts/*.yaml'):
+    if args.context is not None:
+        context_files = [f'contexts/{args.context}.yaml']
+    else:
+        context_files = glob.glob('contexts/*.yaml')
+    for context_file in context_files:
         print('-' * 60)
-        try:
-            print(f'Looking at file \033[34m{context_file}\033[0m')
-            context = Context.read_yaml(context_file)
-            print(f'Processing context \033[35m{context.label}\033[0m')
-            template_file = f'templates/{context.template}.yaml'
-            print(f'Looking at file \033[34m{template_file}\033[0m')
-            template = Template.read_yaml(template_file)
-            if default_sender is None:
-                sender_file = f'senders/{context.sender}.yaml'
-                print(f'Looking at file \033[34m{sender_file}\033[0m')
-                sender = Sender.read_yaml(sender_file)
-                print(f'Using sender \033[35m{sender.full_name}\033[0m')
-            else:
-                sender = default_sender
-        except (ValueError, TypeError) as e:
-            print(f'\033[31mError: {e}\033[0m')
-            continue
-        try:
-            template.write_latex(context, sender, args.date)
-        except jinja2.exceptions.UndefinedError as e:
-            print(f'\033[31mError at variable substitution: {e}\033[0m')
-            continue
-        build_pdf(context.label)
-        if not args.nocleanup:
-            cleanup(context.label)
+        print(f'Looking at file \033[34m{context_file}\033[0m')
+        context = Context.read_yaml(context_file)
+        process_context(context,
+                        sender=default_sender,
+                        date=args.date,
+                        cleanup=not args.nocleanup)
 
 
 if __name__ == '__main__':
