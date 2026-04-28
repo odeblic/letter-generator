@@ -170,23 +170,22 @@ def move_documents() -> None:
     for pdf_file in glob.glob('output/*.pdf'):
         source_file = Path(pdf_file)
         destination_file = folder / source_file.name
-        print(f'\033[35mGetting document {destination_file.name}\033[0m')
+        print(f'Getting document \033[35m{destination_file.name}\033[0m')
         shutil.move(source_file, destination_file)
 
 
 def main() -> None:
     for context_file in glob.glob('contexts/*.yaml'):
-        print(f'\033[34mLooking at file {context_file}\033[0m')
+        print(f'Looking at file \033[34m{context_file}\033[0m')
         context = Context.read_yaml(context_file)
-        print(f'\033[34mProcessing context {context}.\033[0m')
+        print(f'Processing context \033[35m{context.label}\033[0m')
         template_file = f'templates/{context.template}.yaml'
-        print(f'\033[34mLooking at file {template_file}\033[0m')
+        print(f'Looking at file \033[34m{template_file}\033[0m')
         template = Template.read_yaml(template_file)
-        print(f'\033[34mUsing template {template}.\033[0m')
         sender_file = f'senders/{context.sender}.yaml'
-        print(f'\033[34mLooking at file {sender_file}\033[0m')
+        print(f'Looking at file \033[34m{sender_file}\033[0m')
         sender = Sender.read_yaml(sender_file)
-        print(f'\033[34mUsing sender {sender}.\033[0m')
+        print(f'Using sender \033[35m{sender.full_name}\033[0m')
         try:
             template.write_latex(context, sender)
         except jinja2.exceptions.UndefinedError as e:
