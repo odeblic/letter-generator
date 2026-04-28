@@ -97,3 +97,9 @@ python3 generator.py
 ```
 
 All PDF files will be generated in the `output` folder.
+
+See more details in the embedded help:
+
+```sh
+python3 generator.py -h
+```

@@ -265,7 +265,7 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="A simple string parser")
+    parser = argparse.ArgumentParser(description="A formal letter generator")
     parser.add_argument("--generate", action='store_true', help="Generate context files")
     parser.add_argument("--context", help="Only process this context")
     parser.add_argument("--sender", help="Force the sender")
