@@ -178,10 +178,13 @@ def move_documents() -> None:
         shutil.move(source_file, destination_file)
 
 
+# TODO: normalize the CTX generation from CVS
 def make_context() -> None:
     folder = Path('contexts')
     folder.mkdir(exist_ok=True)
-    with open('roles.csv', newline='') as csvfile:
+    source_file = 'roles.csv'
+    print(f'Generating all contexts from \033[33m{source_file}\033[0m')
+    with open(source_file, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for index, row in enumerate(reader):
             company = row['COMPANY']
@@ -203,6 +206,7 @@ def make_context() -> None:
                     'position': position,
                 }
             }
+            print(f'Creating context \033[33m{label}\033[0m')
             filename = folder / f'letter_{index + 1}.yaml'
             with open(filename, 'w') as f:
                 yaml.dump(context, f, default_flow_style=False)
