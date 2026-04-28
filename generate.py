@@ -1,3 +1,4 @@
+import csv
 import datetime
 import glob
 import jinja2
@@ -174,6 +175,36 @@ def move_documents() -> None:
         shutil.move(source_file, destination_file)
 
 
+def make_context() -> None:
+    folder = Path('contexts')
+    folder.mkdir(exist_ok=True)
+    with open('roles.csv', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for index, row in enumerate(reader):
+            company = row['COMPANY']
+            position = row['POSITION']
+            template = row['TEMPLATE']
+            if template.startswith('hr-'):
+                prefix = 'Cover letter for the HR officer at'
+            elif template.startswith('it'):
+                prefix = 'Cover letter for the IT team at'
+            else:
+                prefix = 'Cover letter for'
+            label = f'{prefix} {company} - Olivier de BLIC - {position}'
+            context = {
+                'label': label,
+                'template': 'cover-letter-' + template,
+                'sender': 'odeblic',
+                'variables': {
+                    'company': company,
+                    'position': position,
+                }
+            }
+            filename = folder / f'letter_{index + 1}.yaml'
+            with open(filename, 'w') as f:
+                yaml.dump(context, f, default_flow_style=False)
+
+
 def main() -> None:
     for context_file in glob.glob('contexts/*.yaml'):
         print(f'Looking at file \033[34m{context_file}\033[0m')
@@ -196,4 +227,5 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    make_context()
     main()
